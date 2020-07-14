@@ -1,5 +1,9 @@
-var scene, camera, renderer;
-var geometry, material, mesh;
+import CSG from "./lib/CSGMesh.js";
+var scene, camera, renderer, controls;
+
+var mesh3bool = false;
+var mesh4bool = false;
+var mesh1, mesh2, mesh3, mesh4, mesh5;
 
 init();
 
@@ -24,25 +28,23 @@ function init() {
 
   createLight();
 
-  geometry = new THREE.BoxGeometry(50, 50, 50);
-  material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  var ground = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(3, 3, 1, 1),
+    new THREE.MeshPhongMaterial({
+      color: 0xa0adaf,
+      shininess: 10,
+    })
+  );
+  ground.scale.multiplyScalar(300);
+  ground.receiveShadow = true;
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -100;
+  scene.add(ground);
 
-  mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
-
-  var geometry = new THREE.PlaneBufferGeometry(3, 3, 1, 1);
-  var material = new THREE.MeshPhongMaterial({
-    color: 0xa0adaf,
-    shininess: 10,
-  });
-  var plane = new THREE.Mesh(geometry, material);
-  plane.scale.multiplyScalar(300);
-  plane.receiveShadow = true;
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.y = -100;
-  scene.add(plane);
+  deformDemo();
 
   animate();
+  window.scene = scene;
 }
 
 function animate() {
@@ -50,6 +52,8 @@ function animate() {
 
   renderer.render(scene, camera);
   controls.update();
+  if (mesh3bool) mesh3.position.y += 0.1;
+  if (mesh4bool) mesh4.position.y -= 0.1;
 }
 
 function createLight() {
@@ -69,17 +73,82 @@ function createLight() {
   scene.add(spotLight);
 
   var dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  dirLight.position.set(0, 2, 0);
+  dirLight.position.set(100, 400, 300);
   dirLight.castShadow = true;
-  dirLight.shadow.camera.near = 1;
-  dirLight.shadow.camera.far = 10;
+  dirLight.intensity = 0.5;
 
-  dirLight.shadow.camera.right = 1;
-  dirLight.shadow.camera.left = -1;
-  dirLight.shadow.camera.top = 1;
-  dirLight.shadow.camera.bottom = -1;
-
-  dirLight.shadow.mapSize.width = 1024;
-  dirLight.shadow.mapSize.height = 1024;
   scene.add(dirLight);
 }
+function deformDemo() {
+  mesh1 = new THREE.Mesh(
+    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      shininess: 100,
+    })
+  );
+  mesh1.position.x = 0;
+  
+  scene.add(mesh1);
+
+  mesh2 = new THREE.Mesh(
+    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      shininess: 100,
+    })
+  );
+  mesh2.position.x = -25;
+  mesh3 = new THREE.Mesh(
+    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.MeshPhongMaterial({
+      color: 0x0000ff,
+      shininess: 100,
+    })
+  );
+  mesh3.position.x = 25;
+  mesh2.visible = false;
+  mesh3.visible = false;
+  scene.add(mesh2);
+  scene.add(mesh3);
+  mesh1.updateMatrix();
+  mesh2.updateMatrix();
+}
+
+function doCSG(a, b, op, mat) {
+  var bspA = CSG.fromMesh(a);
+  var bspB = CSG.fromMesh(b);
+  var bspC = bspA[op](bspB);
+  var result = CSG.toMesh(bspC, a.matrix);
+  result.material = mat;
+  result.castShadow = result.receiveShadow = true;
+  return result;
+}
+
+function doOperation() {
+  mesh1.visible = false;
+  mesh3 = doCSG(
+    mesh1,
+    mesh2,
+    "subtract",
+    new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      shininess: 100,
+    })
+  );
+  scene.add(mesh3);
+  mesh3bool = true;
+  mesh4 = doCSG(
+    mesh1,
+    mesh3,
+    "subtract",
+    new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      shininess: 100,
+    })
+  );
+  scene.add(mesh4);
+  mesh4bool = true;
+}
+
+window.addEventListener("click", doOperation);
