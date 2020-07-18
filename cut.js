@@ -10,124 +10,110 @@ function doCSG(a, b, op, mat) {
   return result;
 }
 
-var cubeMeshes = cubeDemo();
-var sphereMeshes = sphereDemo();
-
+var cubeMeshes = cutDemo();
+var meshToBeBend = null;
 window.addEventListener("keypress", (event) => {
   if (event.key === "c") {
-    doOperation(cubeMeshes[0], cubeMeshes[1], cubeMeshes[2]);
-  }
-  if (event.key === "s") {
-    doOperation(sphereMeshes[0], sphereMeshes[1], sphereMeshes[2], true);
+    var meshes = doOperation(cubeMeshes[0], cubeMeshes[1], cubeMeshes[2], {
+      material: new THREE.MeshPhongMaterial({
+        color: 0xff0000,
+        shininess: 100,
+      }),
+    });
+    scene.add(meshes[0]);
+    scene.add(meshes[1]);
+
+    var tween = new TWEEN.Tween(meshes[0].position)
+      .to({ y: -50, x: meshes[0].position.x + 100 }, 2000)
+      .onComplete(function () {
+        scene.remove(meshes[0]);
+      })
+      .start();
+    var tween = new TWEEN.Tween(meshes[1].position)
+      .to({ y: 0, x: meshes[1].position.x + 2 }, 1000)
+      .onComplete(function () {
+        cubeMeshes = nextCut(meshes[1]);
+      })
+      .start();
   }
 });
 
-function cubeDemo() {
-  var mesh1 = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 50, 50),
-    new THREE.MeshPhongMaterial({
-      color: 0xff0000,
-      shininess: 100,
-    })
-  );
-  mesh1.position.x = 0;
-
-  var mesh2 = new THREE.Mesh(
+function nextCut(mainMesh) {
+  var leftBoundingMesh = new THREE.Mesh(
     new THREE.BoxGeometry(50, 50, 50),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  mesh2.position.x = -25;
-  var mesh3 = new THREE.Mesh(
+  leftBoundingMesh.position.x = -25;
+  var rightBoundingMesh = new THREE.Mesh(
     new THREE.BoxGeometry(50, 50, 50),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  mesh3.position.x = 25;
-  mesh2.visible = false;
-  mesh3.visible = false;
-  scene.add(mesh1);
-  scene.add(mesh2);
-  scene.add(mesh3);
-  mesh1.updateMatrix();
-  mesh2.updateMatrix();
-  mesh3.updateMatrix();
-  return [mesh1, mesh2, mesh3];
+  rightBoundingMesh.position.x = 25;
+  leftBoundingMesh.visible = false;
+  rightBoundingMesh.visible = false;
+
+  scene.add(leftBoundingMesh);
+  scene.add(rightBoundingMesh);
+  mainMesh.updateMatrix();
+  leftBoundingMesh.updateMatrix();
+  rightBoundingMesh.updateMatrix();
+  return [mainMesh, leftBoundingMesh, rightBoundingMesh];
 }
 
-function sphereDemo() {
-  var mesh1 = new THREE.Mesh(
-    new THREE.SphereGeometry(25, 50, 50),
+function cutDemo() {
+  var mainMesh = new THREE.Mesh(
+    new THREE.CylinderBufferGeometry(5, 5, 50, 64, 64),
     new THREE.MeshPhongMaterial({
       color: 0xff0000,
       shininess: 100,
     })
   );
-  mesh1.position.x = 0;
+  mainMesh.position.x = -20;
+  mainMesh.rotation.z = Math.PI / 2;
 
-  var mesh2 = new THREE.Mesh(
+  var leftBoundingMesh = new THREE.Mesh(
     new THREE.BoxGeometry(50, 50, 50),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  mesh2.position.x = -25;
-  var mesh3 = new THREE.Mesh(
+  leftBoundingMesh.position.x = -25;
+  var rightBoundingMesh = new THREE.Mesh(
     new THREE.BoxGeometry(50, 50, 50),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  mesh3.position.x = 25;
-  mesh2.visible = false;
-  mesh3.visible = false;
-  scene.add(mesh1);
-  scene.add(mesh2);
-  scene.add(mesh3);
-  mesh1.updateMatrix();
-  mesh2.updateMatrix();
-  mesh3.updateMatrix();
-  mesh1.position.z = 200;
-  mesh2.position.z = 200;
-  mesh3.position.z = 200;
-  return [mesh1, mesh2, mesh3];
+  rightBoundingMesh.position.x = 25;
+  leftBoundingMesh.visible = false;
+  rightBoundingMesh.visible = false;
+  scene.add(mainMesh);
+  scene.add(leftBoundingMesh);
+  scene.add(rightBoundingMesh);
+  mainMesh.updateMatrix();
+  leftBoundingMesh.updateMatrix();
+  rightBoundingMesh.updateMatrix();
+  return [mainMesh, leftBoundingMesh, rightBoundingMesh];
 }
 
-function doOperation(mesh1, mesh2, mesh3, wireFrame) {
-  mesh1.visible = false;
-  var mesh4 = doCSG(
-    mesh1,
-    mesh2,
+function doOperation(mainMesh, leftBoundingMesh, rightBoundingMesh, params) {
+  mainMesh.visible = false;
+  var leftMesh = doCSG(mainMesh, leftBoundingMesh, "subtract", params.material);
+
+  var rightMesh = doCSG(
+    mainMesh,
+    rightBoundingMesh,
     "subtract",
-    new THREE.MeshPhongMaterial({
-      color: 0xff0000,
-      shininess: 100,
-      wireframe: false,
-    })
-  );
-  scene.add(mesh4);
-  var mesh5 = doCSG(
-    mesh1,
-    mesh3,
-    "subtract",
-    new THREE.MeshPhongMaterial({
-      color: 0xff0000,
-      shininess: 100,
-      wireframe: false,
-    })
+    params.material
   );
 
-  scene.add(mesh5);
-  var tween = new TWEEN.Tween(mesh4.position)
-    .to({ y: 100, x: 100 }, 10000)
-    .start();
-  var tween2 = new TWEEN.Tween(mesh5.position)
-    .to({ y: -100, x: -100 }, 10000)
-    .start();
+  return [leftMesh, rightMesh];
 }
