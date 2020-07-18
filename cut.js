@@ -10,6 +10,23 @@ function doCSG(a, b, op, mat) {
   return result;
 }
 
+var knife = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(3, 3, 1, 1),
+  new THREE.MeshPhongMaterial({
+    color: 0x0000ff,
+    shininess: 10,
+    doubleSide:true
+  })
+);
+knife.rotation.y = Math.PI/2;
+knife.rotation.x = -Math.PI/2;
+knife.scale.set(10,2,1);
+knife.position.z = -9;
+knife.receiveShadow = true;
+scene.add(knife);
+
+
+
 var cubeMeshes = cutDemo();
 var meshToBeBend = null;
 window.addEventListener("keypress", (event) => {
@@ -21,22 +38,44 @@ window.addEventListener("keypress", (event) => {
       }),
     });
     scene.add(meshes[0]);
+    //bendGeometry(meshes[0].geometry);
     scene.add(meshes[1]);
 
-    var tween = new TWEEN.Tween(meshes[0].position)
-      .to({ y: -50, x: meshes[0].position.x + 100 }, 2000)
+    var tween = new TWEEN.Tween(knife.rotation)
+      .to({ x:0 }, 100).repeat(1).yoyo(true)
+      .onUpdate(function () {})
+      .onComplete(function () {
+      })
+      .start();
+
+    var tween1 = new TWEEN.Tween(meshes[0].position)
+      .to({ y: -70, x: meshes[0].position.x + 100 }, 1000)
+      .onUpdate(function () {})
       .onComplete(function () {
         scene.remove(meshes[0]);
       })
       .start();
+    var tween = new TWEEN.Tween(meshes[0].rotation)
+      .to({ z: -Math.PI/2 }, 1000)
+      .onComplete(function () {})
+      .start();
     var tween = new TWEEN.Tween(meshes[1].position)
-      .to({ y: 0, x: meshes[1].position.x + 2 }, 1000)
+      .to({ y: 0, x: meshes[1].position.x + 2 }, 500)
       .onComplete(function () {
         cubeMeshes = nextCut(meshes[1]);
       })
       .start();
   }
 });
+
+function bendGeometry(geometry) {
+  for (let i = 0; i < geometry.vertices.length; i++) {
+    geometry.vertices[i].y = geometry.vertices[i].y;
+  }
+
+  // tells Three.js to re-render this mesh
+  geometry.verticesNeedUpdate = true;
+}
 
 function nextCut(mainMesh) {
   var leftBoundingMesh = new THREE.Mesh(
