@@ -39,7 +39,7 @@ function tweenBend()
                     // );
                     bend.force = 0;
                     var tween = new TWEEN.Tween(bend)
-                    .to({ force:-1 }, 1200).easing(TWEEN.Easing.Cubic.InOut).delay(500)
+                    .to({ force:-1 }, 1800).easing(TWEEN.Easing.Cubic.InOut).delay(350)
                     .onUpdate(function () {})
                     .onComplete(function () {
                     })
