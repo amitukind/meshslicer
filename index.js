@@ -45,6 +45,7 @@ function animate() {
   renderer.render(scene, camera);
   controls.update();
   TWEEN.update();
+  modifier && modifier.apply();
 }
 
 function createLight() {

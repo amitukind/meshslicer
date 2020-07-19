@@ -1,5 +1,5 @@
 import CSG from "./lib/CSGMesh.js";
-
+var modifier;
 function doCSG(a, b, op, mat) {
   var bspA = CSG.fromMesh(a);
   var bspB = CSG.fromMesh(b);
@@ -20,12 +20,11 @@ var knife = new THREE.Mesh(
 );
 knife.rotation.y = Math.PI/2;
 knife.rotation.x = -Math.PI/2;
-knife.scale.set(10,2,1);
-knife.position.z = -9;
+knife.scale.set(50,5,1);
+knife.position.z = -35;
+knife.position.x = 1;
 knife.receiveShadow = true;
 scene.add(knife);
-
-
 
 var cubeMeshes = cutDemo();
 var meshToBeBend = null;
@@ -37,35 +36,49 @@ window.addEventListener("keypress", (event) => {
         shininess: 100,
       }),
     });
-    scene.add(meshes[0]);
-    //bendGeometry(meshes[0].geometry);
+    // scene.add(meshes[0]);
     scene.add(meshes[1]);
 
+
+    var meshToBend  = new THREE.Mesh(
+      new THREE.CylinderGeometry(25, 25, 10, 64, 64),
+      new THREE.MeshPhongMaterial({
+          color: 0xff0000,
+          shininess: 100,
+      })
+  );
+  meshToBend.position.x = 5;
+  meshToBend.rotation.z = - Math.PI / 2;
+  meshToBend.rotation.x = Math.PI;
+  scene.add(meshToBend);
+
+
+    bendMesh(meshToBend);
     var tween = new TWEEN.Tween(knife.rotation)
-      .to({ x:0 }, 100).repeat(1).yoyo(true)
+      .to({ x:Math.PI/5 }, 2000).repeat(1).yoyo(true)
       .onUpdate(function () {})
       .onComplete(function () {
       })
       .start();
 
-    var tween1 = new TWEEN.Tween(meshes[0].position)
-      .to({ y: -70, x: meshes[0].position.x + 100 }, 1000)
+    var tween1 = new TWEEN.Tween(meshToBend.position)
+      .to({ y: -70, x: meshToBend.position.x + 200 }, 2000).delay(3000)
       .onUpdate(function () {})
       .onComplete(function () {
-        scene.remove(meshes[0]);
+        scene.remove(meshToBend);
       })
       .start();
-    var tween = new TWEEN.Tween(meshes[0].rotation)
-      .to({ z: -Math.PI/2 }, 1000)
-      .onComplete(function () {})
-      .start();
+    // var tween = new TWEEN.Tween(meshes[0].rotation)
+    //   .to({ z: -Math.PI/2 }, 2000)
+    //   .onComplete(function () {})
+    //   .start();
     var tween = new TWEEN.Tween(meshes[1].position)
-      .to({ y: 0, x: meshes[1].position.x + 2 }, 500)
+      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(3000)
       .onComplete(function () {
         cubeMeshes = nextCut(meshes[1]);
       })
       .start();
-  }
+   }
 });
 
 function bendGeometry(geometry) {
@@ -79,21 +92,21 @@ function bendGeometry(geometry) {
 
 function nextCut(mainMesh) {
   var leftBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.BoxGeometry(190, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  leftBoundingMesh.position.x = -25;
+  leftBoundingMesh.position.x = -190/2;
   var rightBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.BoxGeometry(10, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  rightBoundingMesh.position.x = 25;
+  rightBoundingMesh.position.x = 5;
   leftBoundingMesh.visible = false;
   rightBoundingMesh.visible = false;
 
@@ -102,36 +115,37 @@ function nextCut(mainMesh) {
   mainMesh.updateMatrix();
   leftBoundingMesh.updateMatrix();
   rightBoundingMesh.updateMatrix();
+  // scene.remove(mainMesh);  
   return [mainMesh, leftBoundingMesh, rightBoundingMesh];
 }
 
 function cutDemo() {
   var mainMesh = new THREE.Mesh(
-    new THREE.CylinderBufferGeometry(5, 5, 50, 64, 64),
+    new THREE.CylinderBufferGeometry(25, 25, 200, 64, 64),
     new THREE.MeshPhongMaterial({
       color: 0xff0000,
       shininess: 100,
     })
   );
-  mainMesh.position.x = -20;
+  mainMesh.position.x = -90;
   mainMesh.rotation.z = Math.PI / 2;
 
   var leftBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.BoxGeometry(190, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  leftBoundingMesh.position.x = -25;
+  leftBoundingMesh.position.x = -190/2;
   var rightBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 50, 50),
+    new THREE.BoxGeometry(10, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  rightBoundingMesh.position.x = 25;
+  rightBoundingMesh.position.x = 5;
   leftBoundingMesh.visible = false;
   rightBoundingMesh.visible = false;
   scene.add(mainMesh);
@@ -144,15 +158,11 @@ function cutDemo() {
 }
 
 function doOperation(mainMesh, leftBoundingMesh, rightBoundingMesh, params) {
-  mainMesh.visible = false;
+ 
   var leftMesh = doCSG(mainMesh, leftBoundingMesh, "subtract", params.material);
 
-  var rightMesh = doCSG(
-    mainMesh,
-    rightBoundingMesh,
-    "subtract",
-    params.material
-  );
-
+  var rightMesh = doCSG(mainMesh, rightBoundingMesh, "subtract", params.material);
+  scene.remove(mainMesh);
   return [leftMesh, rightMesh];
 }
+
