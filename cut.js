@@ -28,9 +28,10 @@ knife.receiveShadow = true;
 scene.add(knife);
 
 var cubeMeshes = cutDemo();
-var meshToBeBend = null;
+var enableInput = true;
 window.addEventListener("keypress", (event) => {
-  if (event.key === "c") {
+  if (event.key === "c" && enableInput) {
+    enableInput = false;
     var meshes = doOperation(cubeMeshes[0], cubeMeshes[1], cubeMeshes[2], {
       material: new THREE.MeshPhongMaterial({
         color: 0xff0000,
@@ -63,10 +64,11 @@ window.addEventListener("keypress", (event) => {
       .start();
 
     var tween1 = new TWEEN.Tween(meshToBend.position)
-      .to({ y: -70, x: meshToBend.position.x + 200 }, 2000).delay(2000)
+      .to({ y: -200, x: meshToBend.position.x + 100 }, 2000).delay(1500)
       .onUpdate(function () {})
       .onComplete(function () {
         scene.remove(meshToBend);
+        enableInput = true;
       })
       .start();
     // var tween = new TWEEN.Tween(meshes[0].rotation)
@@ -74,7 +76,7 @@ window.addEventListener("keypress", (event) => {
     //   .onComplete(function () {})
     //   .start();
     var tween = new TWEEN.Tween(meshes[1].position)
-      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(3000)
+      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(2500)
       .onComplete(function () {
         cubeMeshes = nextCut(meshes[1]);
       })
