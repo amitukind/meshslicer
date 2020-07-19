@@ -18,16 +18,7 @@ function init() {
   renderer.setClearColor(0xffffff, 1);
 
   document.body.appendChild(renderer.domElement);
-
-  var helper = new THREE.GridHelper(2000, 100);
-  helper.position.y = -199;
-  helper.material.opacity = 0.25;
-  helper.material.transparent = true;
-  scene.add(helper);
-
-  var axes = new THREE.AxesHelper(1000);
-  scene.add(axes);
-
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
 
   createLight();
 
@@ -44,10 +35,17 @@ function init() {
   ground.position.y = -100;
   scene.add(ground);
 
-  
+  animate();
+  window.scene = scene;
 }
 
+function animate() {
+  requestAnimationFrame(animate);
 
+  renderer.render(scene, camera);
+  controls.update();
+  TWEEN.update();
+}
 
 function createLight() {
   scene.add(new THREE.AmbientLight(0xffffff, 0.3));
