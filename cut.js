@@ -23,6 +23,7 @@ knife.rotation.x = -Math.PI/2;
 knife.scale.set(50,5,1);
 knife.position.z = -35;
 knife.position.x = 1;
+knife.position.y = 5;
 knife.receiveShadow = true;
 scene.add(knife);
 
@@ -55,14 +56,14 @@ window.addEventListener("keypress", (event) => {
 
     bendMesh(meshToBend);
     var tween = new TWEEN.Tween(knife.rotation)
-      .to({ x:Math.PI/5 }, 2000).repeat(1).yoyo(true)
+      .to({ x:Math.PI/5 }, 1500).repeat(1).yoyo(true)
       .onUpdate(function () {})
       .onComplete(function () {
       })
       .start();
 
     var tween1 = new TWEEN.Tween(meshToBend.position)
-      .to({ y: -70, x: meshToBend.position.x + 200 }, 2000).delay(3000)
+      .to({ y: -70, x: meshToBend.position.x + 200 }, 2000).delay(2000)
       .onUpdate(function () {})
       .onComplete(function () {
         scene.remove(meshToBend);
