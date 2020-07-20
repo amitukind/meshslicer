@@ -19,11 +19,11 @@ var knife = new THREE.Mesh(
   })
 );
 knife.rotation.y = Math.PI/2;
-knife.rotation.x = -Math.PI/2;
-knife.scale.set(50,5,1);
+// knife.rotation.x = -Math.PI/2;
+knife.scale.set(50,7,1);
 knife.position.z = -35;
 knife.position.x = 1;
-knife.position.y = 5;
+knife.position.y = 40;
 knife.receiveShadow = true;
 scene.add(knife);
 
@@ -56,8 +56,8 @@ window.addEventListener("keypress", (event) => {
 
 
     bendMesh(meshToBend);
-    var tween = new TWEEN.Tween(knife.rotation)
-      .to({ x:Math.PI/5 }, 1500).repeat(1).yoyo(true)
+    var knifeTween = new TWEEN.Tween(knife.position)
+      .to({ y:-15 }, 1500).repeat(1).yoyo(true)
       .onUpdate(function () {})
       .onComplete(function () {
       })
@@ -71,12 +71,9 @@ window.addEventListener("keypress", (event) => {
         enableInput = true;
       })
       .start();
-    // var tween = new TWEEN.Tween(meshes[0].rotation)
-    //   .to({ z: -Math.PI/2 }, 2000)
-    //   .onComplete(function () {})
-    //   .start();
+
     var tween = new TWEEN.Tween(meshes[1].position)
-      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(2500)
+      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(3000)
       .onComplete(function () {
         cubeMeshes = nextCut(meshes[1]);
       })
