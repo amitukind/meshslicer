@@ -15,56 +15,81 @@ var knife = new THREE.Mesh(
   new THREE.MeshPhongMaterial({
     color: 0x0000ff,
     shininess: 10,
-    doubleSide:true
+    doubleSide: true,
   })
 );
-knife.rotation.y = Math.PI/2;
-// knife.rotation.x = -Math.PI/2;
-knife.scale.set(50,7,1);
+knife.rotation.y = Math.PI / 2;
+knife.scale.set(50, 7, 1);
 knife.position.z = -35;
-knife.position.x = 1;
+knife.position.x = 0.5;
 knife.position.y = 40;
 knife.receiveShadow = true;
 scene.add(knife);
 
 var cubeMeshes = cutDemo();
 var enableInput = true;
+var deltaWidth = 0;
+var mainMeshPos = -100;
+var newWidth = 200;
+var mainTween = new TWEEN.Tween(cubeMeshes[0].position)
+  .to({ x: cubeMeshes[0].position.x + 10 }, 5000)
+  .delay(50)
+  .onComplete(function () {})
+  .onStop(function () {
+    deltaWidth = cubeMeshes[0].position.x + 100;
+  })
+  .start();
+
+function getMeshToBend(width) {
+  let meshToBend = new THREE.Mesh(
+    new THREE.CylinderGeometry(25, 25, width, 64, 64),
+    new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      shininess: 100,
+    })
+  );
+  meshToBend.position.x = 0;
+  meshToBend.rotation.z = -Math.PI / 2;
+  meshToBend.rotation.x = Math.PI;
+  return meshToBend;
+}
+
 window.addEventListener("keypress", (event) => {
   if (event.key === "c" && enableInput) {
     enableInput = false;
-    var meshes = doOperation(cubeMeshes[0], cubeMeshes[1], cubeMeshes[2], {
+    
+    let meshes = doOperation(cubeMeshes[0], cubeMeshes[1], cubeMeshes[2], {
       material: new THREE.MeshPhongMaterial({
         color: 0xff0000,
         shininess: 100,
       }),
     });
-    // scene.add(meshes[0]);
-    scene.add(meshes[1]);
+    scene.add(meshes[1]); //big piece
+    scene.remove(meshes[0]);
+    
+    mainTween.stop();
+    mainMeshPos = meshes[1].position.x;
+    newWidth -=  deltaWidth;
+    var meshToBend = getMeshToBend(deltaWidth);
+    // meshToBend.scale.y = deltaWidth/5;
 
-
-    var meshToBend  = new THREE.Mesh(
-      new THREE.CylinderGeometry(25, 25, 10, 64, 64),
-      new THREE.MeshPhongMaterial({
-          color: 0xff0000,
-          shininess: 100,
-      })
-  );
-  meshToBend.position.x = 5;
-  meshToBend.rotation.z = - Math.PI / 2;
-  meshToBend.rotation.x = Math.PI;
-  scene.add(meshToBend);
-
+    meshToBend.position.x = deltaWidth/2;
+    scene.add(meshToBend);
+    
+    cubeMeshes = nextCut(meshes[1]);
 
     bendMesh(meshToBend);
     var knifeTween = new TWEEN.Tween(knife.position)
-      .to({ y:-15 }, 1500).repeat(1).yoyo(true)
+      .to({ y: -15 }, 1500)
+      .repeat(1)
+      .yoyo(true)
       .onUpdate(function () {})
-      .onComplete(function () {
-      })
+      .onComplete(function () {})
       .start();
 
     var tween1 = new TWEEN.Tween(meshToBend.position)
-      .to({ y: -200, x: meshToBend.position.x + 100 }, 2000).delay(1500)
+      .to({ y: -200, x: meshToBend.position.x + 100 }, 2000)
+      .delay(1500)
       .onUpdate(function () {})
       .onComplete(function () {
         scene.remove(meshToBend);
@@ -72,80 +97,74 @@ window.addEventListener("keypress", (event) => {
       })
       .start();
 
-    var tween = new TWEEN.Tween(meshes[1].position)
-      .to({ y: 0, x: meshes[1].position.x + 10 }, 1000).delay(3000)
-      .onComplete(function () {
-        cubeMeshes = nextCut(meshes[1]);
+    mainTween = new TWEEN.Tween(meshes[1].position)
+      .to({ x: meshes[1].position.x + 10 }, 5000)
+      .delay(3500)
+      .onComplete(function () {})
+      .onStop(function () {
+        deltaWidth = meshes[1].position.x - mainMeshPos;
       })
       .start();
-   }
+  }
 });
 
-function bendGeometry(geometry) {
-  for (let i = 0; i < geometry.vertices.length; i++) {
-    geometry.vertices[i].y = geometry.vertices[i].y;
-  }
 
-  // tells Three.js to re-render this mesh
-  geometry.verticesNeedUpdate = true;
-}
-
-function nextCut(mainMesh) {
+function nextCut(NextmainMesh) {
   var leftBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(190, 100, 100),
+    new THREE.BoxGeometry(200, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  leftBoundingMesh.position.x = -190/2;
+  leftBoundingMesh.position.x = -100;
   var rightBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(10, 100, 100),
+    new THREE.BoxGeometry(50, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  rightBoundingMesh.position.x = 5;
+  rightBoundingMesh.position.x = 25;
   leftBoundingMesh.visible = false;
   rightBoundingMesh.visible = false;
 
   scene.add(leftBoundingMesh);
   scene.add(rightBoundingMesh);
-  mainMesh.updateMatrix();
+  NextmainMesh.updateMatrix();
   leftBoundingMesh.updateMatrix();
   rightBoundingMesh.updateMatrix();
-  // scene.remove(mainMesh);  
-  return [mainMesh, leftBoundingMesh, rightBoundingMesh];
+
+  return [NextmainMesh, leftBoundingMesh, rightBoundingMesh];
 }
 
 function cutDemo() {
-  var mainMesh = new THREE.Mesh(
+  let mainMesh = new THREE.Mesh(
     new THREE.CylinderBufferGeometry(25, 25, 200, 64, 64),
     new THREE.MeshPhongMaterial({
       color: 0xff0000,
       shininess: 100,
     })
   );
-  mainMesh.position.x = -90;
+  mainMesh.position.x = -100;
   mainMesh.rotation.z = Math.PI / 2;
 
   var leftBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(190, 100, 100),
+    new THREE.BoxGeometry(200, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       shininess: 100,
     })
   );
-  leftBoundingMesh.position.x = -190/2;
+  leftBoundingMesh.position.x = -100;
   var rightBoundingMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(10, 100, 100),
+    new THREE.BoxGeometry(50, 100, 100),
     new THREE.MeshPhongMaterial({
       color: 0x0000ff,
       shininess: 100,
     })
   );
-  rightBoundingMesh.position.x = 5;
+  rightBoundingMesh.position.x = 25;
   leftBoundingMesh.visible = false;
   rightBoundingMesh.visible = false;
   scene.add(mainMesh);
@@ -157,12 +176,20 @@ function cutDemo() {
   return [mainMesh, leftBoundingMesh, rightBoundingMesh];
 }
 
-function doOperation(mainMesh, leftBoundingMesh, rightBoundingMesh, params) {
- 
-  var leftMesh = doCSG(mainMesh, leftBoundingMesh, "subtract", params.material);
+function doOperation(_mainMesh, _leftBoundingMesh, _rightBoundingMesh, _params) {
+  let __leftMesh = doCSG(_mainMesh, _leftBoundingMesh, "subtract", _params.material);
 
-  var rightMesh = doCSG(mainMesh, rightBoundingMesh, "subtract", params.material);
-  scene.remove(mainMesh);
-  return [leftMesh, rightMesh];
+  let __rightMesh = doCSG(
+    _mainMesh,
+    _rightBoundingMesh,
+    "subtract",
+    _params.material
+  );
+  scene.remove(_mainMesh);
+  scene.remove(_leftBoundingMesh);
+  scene.remove(_rightBoundingMesh);
+  _mainMesh.geometry.dispose();
+  _mainMesh.material.dispose();
+  _mainMesh = undefined;
+  return [__leftMesh, __rightMesh];
 }
-
