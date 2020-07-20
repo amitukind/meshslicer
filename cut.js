@@ -32,7 +32,7 @@ var deltaWidth = 0;
 var mainMeshPos = -100;
 var newWidth = 200;
 var mainTween = new TWEEN.Tween(cubeMeshes[0].position)
-  .to({ x: cubeMeshes[0].position.x + 10 }, 5000)
+  .to({ x: cubeMeshes[0].position.x + 100 }, 50000)
   .delay(50)
   .onComplete(function () {})
   .onStop(function () {
@@ -80,12 +80,12 @@ window.addEventListener("keypress", (event) => {
 
     bendMesh(meshToBend);
     var knifeTween = new TWEEN.Tween(knife.position)
-      .to({ y: -15 }, 1500)
-      .repeat(1)
-      .yoyo(true)
-      .onUpdate(function () {})
-      .onComplete(function () {})
-      .start();
+    .to({ y: -15 }, 1300)
+    .repeat(1)
+    .yoyo(true).easing(TWEEN.Easing.Cubic.InOut)
+    .onUpdate(function () {})
+    .onComplete(function () {})
+    .start();
 
     var tween1 = new TWEEN.Tween(meshToBend.position)
       .to({ y: -200, x: meshToBend.position.x + 100 }, 2000)
@@ -98,7 +98,7 @@ window.addEventListener("keypress", (event) => {
       .start();
 
     mainTween = new TWEEN.Tween(meshes[1].position)
-      .to({ x: meshes[1].position.x + 10 }, 5000)
+      .to({ x: meshes[1].position.x + 100 }, 50000)
       .delay(3500)
       .onComplete(function () {})
       .onStop(function () {
