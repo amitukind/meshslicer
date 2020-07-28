@@ -19,6 +19,7 @@ function init() {
 
   document.body.appendChild(renderer.domElement);
   controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enabled = false;
 
   createLight();
 
@@ -36,14 +37,14 @@ function init() {
   scene.add(ground);
 
   animate();
-  window.scene = scene;
+  // window.scene = scene;
 }
 
 function animate() {
   requestAnimationFrame(animate);
 
   renderer.render(scene, camera);
-  controls.update();
+  // controls.update();
   TWEEN.update();
   modifier && modifier.apply();
 }
