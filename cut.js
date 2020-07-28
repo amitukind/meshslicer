@@ -66,7 +66,7 @@ var KnifeUp = 0;
 var forceMapping = 0;
 var cutStatus = "idle";
 function PressedDown() {
-  if (knife.position.y >= -15 && cutStatus != "complete") KnifeUp = -0.5;
+  if (knife.position.y >= -15 && cutStatus != "complete") KnifeUp = -0.7;
   if (cutStatus == "idle") {
     cutStatus = "started";
     mainTween.stop();
@@ -99,11 +99,11 @@ function PressedDown() {
 
 function PressedUp() {
   if (knife.position.y <= 40) KnifeUp = 0.5;
-  console.log(KnifeUp);
 }
 
 function MainUpdate() {
   requestAnimationFrame(MainUpdate);
+  console.log(KnifeUp);
   if (KnifeUp != 0) {
     if (KnifeUp > 0 && knife.position.y >= 40) {
       KnifeUp = 0;
