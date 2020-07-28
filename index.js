@@ -9,7 +9,7 @@ function init() {
     1,
     10000
   );
-  camera.position.x = 50;
+  camera.position.x = 200;
   camera.position.y = 100;
   camera.position.z = 200;
 
