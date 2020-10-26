@@ -1,6 +1,9 @@
 ## About
 [Three.js](https://threejs.org/) based ASMR slicing WebGL demo [WIP]
 
+## How to play
+Hold 'C' key to cut the slice
+
 [Live Demo](http://amitukind.com/projects/meshslicer/)
 
 ![](./images/demo.gif)
